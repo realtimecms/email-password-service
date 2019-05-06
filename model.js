@@ -1,4 +1,4 @@
-const rtcms = require("../../RTCms")
+const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 
 const User = definition.foreignModel("users", "User")

@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 
-const rtcms = require("../../RTCms")
+const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")

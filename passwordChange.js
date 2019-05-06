@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const rtcms = require("../../RTCms")
+const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 
 require('../../i18n/ejs-require.js')

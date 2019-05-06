@@ -3,6 +3,10 @@ const r = require('rethinkdb')
 const testUtils = require('rethink-event-sourcing/tape-test-utils.js')
 const crypto = require('crypto')
 
+const admin = {
+  roles: ["admin"]
+}
+
 test('User operations - Register, login, logout, reset password, change email...', t => {
   t.plan(13)
 
@@ -407,6 +411,7 @@ test('User operations - Register, login, logout, reset password, change email...
 
     testUtils.runCommand(t, r, 'users', {
       type: 'UserDelete',
+      client: admin,
       parameters: { user: userId }
     }, (cId) => { }).then(result => {})
 

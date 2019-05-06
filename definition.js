@@ -1,4 +1,4 @@
-const rtcms = require("../../RTCms")
+const rtcms = require("realtime-cms")
 
 const definition = rtcms.createServiceDefinition({
   name: "emailPassword",

@@ -1,7 +1,7 @@
 const r = require.main.rethinkdb || require('rethinkdb')
 if (require.main === module) require.main.rethinkdb = r
 
-const rtcms = require("../../RTCms")
+const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 
 require("./crud.js")
