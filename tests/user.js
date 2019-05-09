@@ -333,9 +333,11 @@ test('User operations - Register, login, logout, reset password, change email...
     testUtils.runCommand(t, r, 'emailPassword', {
       type: 'startEmailChange',
       parameters: {
-        user: userId,
         newEmail: newEmail,
         passwordHash: newPasswordHash3
+      },
+      client: {
+        user: userId
       }
     }, (cId) => { commandId = cId }).then(result => {})
 
