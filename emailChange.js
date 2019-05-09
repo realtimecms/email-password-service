@@ -4,6 +4,8 @@ const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
+const passwordHash = require('./passwordHash.js')
+
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
 
@@ -12,9 +14,11 @@ definition.action({
   properties: {
     user: { type: User, idOnly: true },
     newEmail: { type: String },
-    passwordHash: { type: String }
+    passwordHash: { type: String, preFilter: passwordHash }
   },
-  async execute({ user, newEmail, passwordHash }, {client, service}, emit) {
+  async execute({ newEmail, passwordHash }, {client, service}, emit) {
+    if(!client.user) throw new Error("notAuthorized")
+    const user = client.user
     let oldEmailPromise = EmailPassword.run(EmailPassword.table.filter({ user }).nth(0))
     let newEmailPromise = EmailPassword.get(newEmail)
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {

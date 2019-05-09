@@ -7,13 +7,15 @@ const i18n = require('../../i18n')
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
+const passwordHash = require("./passwordHash.js")
+
 definition.action({
   name: "updatePasswordByUser",
   properties: {
     user: { type: User, idOnly: true },
     email: { type: EmailPassword, idOnly: true },
-    oldPasswordHash: { type: String },
-    newPasswordHash: { type: String }
+    oldPasswordHash: { type: String, preFilter: passwordHash },
+    newPasswordHash: { type: String, preFilter: passwordHash }
   },
   async execute({ user, email, oldPasswordHash, newPasswordHash }, { service, client }, emit) {
     let row = await EmailPassword.get(email)
@@ -37,8 +39,8 @@ definition.action({
   properties: {
     user: { type: User, idOnly: true },
     email: { type: EmailPassword, idOnly: true },
-    oldPasswordHash: { type: String },
-    newPasswordHash: { type: String }
+    oldPasswordHash: { type: String, preFilter: passwordHash },
+    newPasswordHash: { type: String, preFilter: passwordHash }
   },
   async execute({ user, oldPasswordHash, newPasswordHash }, { service, client}, emit) {
     let cursor = await EmailPassword.run(EmailPassword.table.filter({user}))
@@ -98,7 +100,7 @@ definition.action({
   name: "finishPasswordReset",
   properties: {
     key: { type: String },
-    newPasswordHash: { type: String }
+    newPasswordHash: { type: String, preFilter: passwordHash }
   },
   async execute({ key, newPasswordHash }, { service, client}, emit) {
     let emailKey = await EmailKey.get(key)

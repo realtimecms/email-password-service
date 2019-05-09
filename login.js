@@ -3,12 +3,13 @@ const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
+const passwordHash = require("./passwordHash.js")
 
 definition.action({
   name: "login",
   properties: {
     email: { type: String },
-    passwordHash: { type: String }
+    passwordHash: { type: String, preFilter: passwordHash }
   },
   async execute({ email, passwordHash }, {service, client}, emit) {
     let registerKeyPromise = EmailKey.run(EmailKey.table

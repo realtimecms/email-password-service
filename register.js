@@ -5,6 +5,8 @@ const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
+const passwordHash = require('./passwordHash.js')
+
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
 
@@ -22,7 +24,7 @@ definition.action({
   name: "startRegister",
   properties: {
     email: { type: String },
-    passwordHash: { type: String },
+    passwordHash: { type: String, preFilter: passwordHash },
     userData: { type: Object }
   },
   async execute({ email, passwordHash, userData }, {service}, emit) {
@@ -147,5 +149,24 @@ definition.action({
       roles: []
     }])
     return user
+  }
+})
+
+definition.view({
+  name: "emailKey",
+  properties: {
+    key: {
+      type: EmailKey,
+      idOnly: true
+    }
+  },
+  returns: {
+    type: EmailKey
+  },
+  rawRead: true,
+  async read({ key }, cd, method) {
+    if(method == "get") return EmailKey.table.get(key).without('passwordHash')
+    return EmailKey.table.get(key).changes({includeInitial: true})
+        .without({new_val: "passwordHash", old_val: "passwordHash"})
   }
 })
