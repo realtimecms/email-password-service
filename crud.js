@@ -102,16 +102,21 @@ definition.action({
     type: EmailPassword,
     idOnly: true
   },
-  async execute({ emailPassword, passwordHash }, context, emit) {
+  async execute({ emailPassword, passwordHash }, { client, service }, emit) {
     const emailRow = await EmailPassword.get(emailPassword)
     if(!emailRow) throw new Error("notFound")
-    emit([{
+    /*emit([{
       type: "EmailPasswordUpdated",
       emailPassword,
       data: {
         passwordHash: passwordHash
       }
-    }])
+    }])*/
+    service.trigger({
+      type: "OnPasswordChange",
+      user: emailRow.user,
+      passwordHash
+    })
     return emailPassword
   }
 })

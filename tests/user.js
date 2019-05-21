@@ -201,10 +201,12 @@ test('User operations - Register, login, logout, reset password, change email...
     testUtils.runCommand(t, r, 'emailPassword', {
       type: 'updatePasswordByUser',
       parameters: {
-        user: userId,
         email: email,
         oldPasswordHash: passwordHash,
         newPasswordHash: newPasswordHash
+      },
+      client: {
+        user: userId
       }
     }, (cId) => { }).then(result => {})
 
@@ -230,9 +232,11 @@ test('User operations - Register, login, logout, reset password, change email...
     testUtils.runCommand(t, r, 'emailPassword', {
       type: 'updateAllPasswordsByUser',
       parameters: {
-        user: userId,
         oldPasswordHash: newPasswordHash,
         newPasswordHash: newPasswordHash2
+      },
+      client: {
+        user: userId
       }
     }, (cId) => { }).then(result => {})
 

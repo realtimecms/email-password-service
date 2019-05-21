@@ -12,37 +12,35 @@ const passwordHash = require("./passwordHash.js")
 definition.action({
   name: "updatePasswordByUser",
   properties: {
-    user: { type: User, idOnly: true },
     email: { type: EmailPassword, idOnly: true },
     oldPasswordHash: { type: String, preFilter: passwordHash },
     newPasswordHash: { type: String, preFilter: passwordHash }
   },
-  async execute({ user, email, oldPasswordHash, newPasswordHash }, { service, client }, emit) {
+  async execute({ email, oldPasswordHash, newPasswordHash }, { service, client }, emit) {
+    if(!client.user) throw new service.error("notAuthorized")
+    const user = client.user
     let row = await EmailPassword.get(email)
     if (!row) throw service.error("notFound")
     if (row.user != user) throw service.error("notAuthorized")
     if(row.passwordHash != oldPasswordHash) throw service.error("wrongPassword")
-    const passwordHash = newPasswordHash
 
-    emit("emailPassword", [{
-      type: "EmailPasswordUpdated",
-      emailPassword: email,
-      data: {
-        passwordHash: passwordHash
-      }
-    }])
+    service.trigger({
+      type: "OnPasswordChange",
+      user,
+      passwordHash: newPasswordHash
+    })
   }
 })
 
 definition.action({
   name: "updateAllPasswordsByUser",
   properties: {
-    user: { type: User, idOnly: true },
-    email: { type: EmailPassword, idOnly: true },
     oldPasswordHash: { type: String, preFilter: passwordHash },
     newPasswordHash: { type: String, preFilter: passwordHash }
   },
-  async execute({ user, oldPasswordHash, newPasswordHash }, { service, client}, emit) {
+  async execute({ oldPasswordHash, newPasswordHash }, { service, client}, emit) {
+    if(!client.user) throw new service.error("notAuthorized")
+    const user = client.user
     let cursor = await EmailPassword.run(EmailPassword.table.filter({user}))
     if(!cursor) service.error("notFound")
     let results = await cursor.toArray()
@@ -51,20 +49,11 @@ definition.action({
       if (row.user != user) throw service.error("notAuthorized")
       if (row.passwordHash != oldPasswordHash) throw service.error("wrongPassword")
     }
-
-    let passwordHash = newPasswordHash
-    let events = []
-    for(let row of results) {
-      let email = row.email
-      events.push({
-        type: "EmailPasswordUpdated",
-        emailPassword: email,
-        data: {
-          passwordHash
-        }
-      })
-    }
-    emit("emailPassword", events)
+    service.trigger({
+      type: "OnPasswordChange",
+      user,
+      passwordHash: newPasswordHash
+    })
   }
 })
 
@@ -108,18 +97,57 @@ definition.action({
     if(emailKey.action != 'resetPassword') throw service.error('notFound')
     if(emailKey.used) throw service.error('used')
     if(emailKey.expire < Date.now()) throw service.error('expired')
-    let passwordHash = newPasswordHash
     let emailRow = await EmailPassword.get(emailKey.email)
     if(!emailRow) throw service.error('notFound')
+    service.trigger({
+      type: "OnPasswordChange",
+      user: emailRow.user,
+      passwordHash: newPasswordHash
+    })
     emit("emailPassword", [{
       type: "keyUsed",
       key
-    }, {
-      type: "EmailPasswordUpdated",
-      emailPassword: emailKey.email,
-      data: {
-        passwordHash
-      }
     }])
   }
 })
+
+
+definition.event({
+  name: "userPasswordChanged",
+  properties: {
+    user: {
+      type: User,
+      idOnly: true
+    }
+  },
+  async execute({ user, passwordHash }) {
+    let cursor = await EmailPassword.run(EmailPassword.table.filter({user}))
+    if(!cursor) service.error("notFound")
+    let results = await cursor.toArray()
+    if(results.length == 0) throw service.error("notFound")
+    for(let row of results) {
+      EmailPassword.update(row.email, { passwordHash })
+    }
+  }
+})
+
+definition.trigger({
+  name: "OnPasswordChange",
+  properties: {
+    user: {
+      type: User,
+      idOnly: true
+    },
+    passwordHash: {
+      type: String
+    }
+  },
+  async execute({ user, passwordHash }, context, emit) {
+    emit([{
+      type: "userPasswordChanged",
+      user,
+      passwordHash
+    }])
+  }
+})
+

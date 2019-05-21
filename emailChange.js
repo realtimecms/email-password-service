@@ -12,7 +12,6 @@ const i18n = require('../../i18n')
 definition.action({
   name: "startEmailChange",
   properties: {
-    user: { type: User, idOnly: true },
     newEmail: { type: String },
     passwordHash: { type: String, preFilter: passwordHash }
   },
