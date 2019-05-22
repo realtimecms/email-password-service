@@ -5,7 +5,8 @@ const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
-const passwordHash = require('./passwordHash.js')
+const passwordHash = require('../config/passwordHash.js')
+const userData = require('../config/userData.js')
 
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
@@ -25,7 +26,7 @@ definition.action({
   properties: {
     email: { type: String },
     passwordHash: { type: String, preFilter: passwordHash },
-    userData: { type: Object }
+    userData
   },
   async execute({ email, passwordHash, userData }, {service}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)

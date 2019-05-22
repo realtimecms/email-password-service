@@ -3,7 +3,7 @@ const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
-const passwordHash = require("./passwordHash.js")
+const passwordHash = require("../config/passwordHash.js")
 
 definition.action({
   name: "login",
