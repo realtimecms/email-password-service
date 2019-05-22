@@ -8,8 +8,8 @@ const passwordHash = require("../config/passwordHash.js")
 definition.action({
   name: "login",
   properties: {
-    email: { type: String },
-    passwordHash: { type: String, preFilter: passwordHash }
+    email: EmailPassword.properties.email,
+    passwordHash: EmailPassword.properties.passwordHash
   },
   async execute({ email, passwordHash }, {service, client}, emit) {
     let registerKeyPromise = EmailKey.run(EmailKey.table

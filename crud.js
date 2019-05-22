@@ -6,12 +6,8 @@ const {User, EmailPassword} = require("./model.js")
 definition.action({
   name: "EmailPasswordUserCreate", // create user with emailPassword
   properties: {
-    email: {
-      type: String
-    },
-    passwordHash: {
-      type: String
-    }
+    email: EmailPassword.properties.email,
+    passwordHash: EmailPassword.properties.passwordHash
   },
   returns: {
     type: EmailPassword,
@@ -47,12 +43,7 @@ definition.action({
 definition.action({
   name: "EmailPasswordCreate", // override CRUD operation
   properties: {
-    email: {
-      type: String
-    },
-    passwordHash: {
-      type: String
-    },
+    ...EmailPassword.properties,
     user: {
       type: User,
       idOnly: true
@@ -94,9 +85,7 @@ definition.action({
       type: EmailPassword,
       idOnly: true
     },
-    passwordHash: {
-      type: String
-    }
+    passwordHash: EmailPassword.properties.passwordHash
   },
   returns: {
     type: EmailPassword,
@@ -128,9 +117,7 @@ definition.action({
       type: EmailPassword,
       idOnly: true
     },
-    passwordHash: {
-      type: String
-    }
+    passwordHash: EmailPassword.properties.passwordHash
   },
   returns: {
     type: EmailPassword,

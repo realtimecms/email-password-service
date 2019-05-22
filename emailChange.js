@@ -12,8 +12,8 @@ const i18n = require('../../i18n')
 definition.action({
   name: "startEmailChange",
   properties: {
-    newEmail: { type: String },
-    passwordHash: { type: String, preFilter: passwordHash }
+    newEmail: EmailPassword.properties.email,
+    passwordHash: EmailPassword.properties.passwordHash
   },
   async execute({ newEmail, passwordHash }, {client, service}, emit) {
     if(!client.user) throw new Error("notAuthorized")

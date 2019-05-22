@@ -24,8 +24,8 @@ definition.event({
 definition.action({
   name: "startRegister",
   properties: {
-    email: { type: String },
-    passwordHash: { type: String, preFilter: passwordHash },
+    email: EmailPassword.properties.email,
+    passwordHash: EmailPassword.properties.passwordHash,
     userData
   },
   async execute({ email, passwordHash, userData }, {service}, emit) {

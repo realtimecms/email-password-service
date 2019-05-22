@@ -13,8 +13,8 @@ definition.action({
   name: "updatePasswordByUser",
   properties: {
     email: { type: EmailPassword, idOnly: true },
-    oldPasswordHash: { type: String, preFilter: passwordHash },
-    newPasswordHash: { type: String, preFilter: passwordHash }
+    oldPasswordHash: EmailPassword.properties.passwordHash,
+    newPasswordHash: EmailPassword.properties.passwordHash
   },
   async execute({ email, oldPasswordHash, newPasswordHash }, { service, client }, emit) {
     if(!client.user) throw new service.error("notAuthorized")
@@ -35,8 +35,8 @@ definition.action({
 definition.action({
   name: "updateAllPasswordsByUser",
   properties: {
-    oldPasswordHash: { type: String, preFilter: passwordHash },
-    newPasswordHash: { type: String, preFilter: passwordHash }
+    oldPasswordHash: EmailPassword.properties.passwordHash,
+    newPasswordHash: EmailPassword.properties.passwordHash
   },
   async execute({ oldPasswordHash, newPasswordHash }, { service, client}, emit) {
     if(!client.user) throw new service.error("notAuthorized")
@@ -89,7 +89,7 @@ definition.action({
   name: "finishPasswordReset",
   properties: {
     key: { type: String },
-    newPasswordHash: { type: String, preFilter: passwordHash }
+    newPasswordHash: EmailPassword.properties.passwordHash
   },
   async execute({ key, newPasswordHash }, { service, client}, emit) {
     let emailKey = await EmailKey.get(key)
