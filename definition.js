@@ -1,5 +1,5 @@
 const rtcms = require("realtime-cms")
-const validators = require("../../validation")
+const validators = require("../validation")
 
 const definition = rtcms.createServiceDefinition({
   name: "emailPassword",

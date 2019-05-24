@@ -26,7 +26,11 @@ definition.action({
   properties: {
     email: EmailPassword.properties.email,
     passwordHash: EmailPassword.properties.passwordHash,
-    userData
+    userData,
+    recaptcha: {
+      type: "String",
+      validation: ['recaptcha']
+    }
   },
   async execute({ email, passwordHash, userData }, {service}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)
