@@ -33,5 +33,10 @@ definition.action({
       expire: null,
       roles: userRow.roles || []
     }])
+    await service.trigger({
+      type: "OnLogin",
+      user: emailPasswordRow.user,
+      session: client.sessionId
+    })
   }
 })

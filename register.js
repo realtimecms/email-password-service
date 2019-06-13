@@ -32,7 +32,7 @@ definition.action({
       validation: ['recaptcha']
     }
   },
-  async execute({ email, passwordHash, userData }, {service}, emit) {
+  async execute({ email, passwordHash, userData }, {service, client}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)
     let registerKeysPromise = EmailKey.run(EmailKey.table
         .filter({ action: 'register',  used: false, email })
@@ -63,6 +63,11 @@ definition.action({
       type: "sent",
       email: i18n().emailPassword.registerEmail({ key: randomKey, email, userData })
     }])
+    await service.trigger({
+      type:"OnRegisterStart",
+      session: client.sessionId,
+      user: user
+    })
   }
 })
 
@@ -153,6 +158,11 @@ definition.action({
       expire: null,
       roles: []
     }])
+    await service.trigger({
+      type: "OnLogin",
+      user: user,
+      session: client.sessionId
+    })
     return user
   }
 })
