@@ -6,7 +6,7 @@ const definition = require("./definition.js")
 const {User, EmailPassword, EmailKey} = require("./model.js")
 
 const passwordHash = require('../config/passwordHash.js')
-const userData = require('../config/userData.js')
+const userData = require('../config/userData.js')(definition)
 
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
