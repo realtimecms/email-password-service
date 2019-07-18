@@ -56,7 +56,7 @@ definition.action({
       action: 'register',
       key: randomKey,
       user,
-      email, passwordHash, userData,
+      email, passwordHash, userData: { ...userData, email: email },
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
     emit("email", [{
@@ -151,6 +151,12 @@ definition.action({
         email
       }
     }])
+    await service.trigger({
+      type:"OnRegister",
+      session: client.sessionId,
+      user: user,
+      userData
+    })
     if(client && client.sessionId) emit("session", [{
       type: "loggedIn",
       user,
