@@ -21,12 +21,22 @@ definition.event({
   }
 })
 
+let propertiesWithoutEmail = {}
+for(let propName in userData.properties) {
+  if(propName == 'email') continue;
+  propertiesWithoutEmail[propName] = userData.properties[propName]
+}
+let userDataWithoutEmail = {
+  ...userData,
+  properties: propertiesWithoutEmail
+}
+
 definition.action({
   name: "startRegister",
   properties: {
     email: EmailPassword.properties.email,
     passwordHash: EmailPassword.properties.passwordHash,
-    userData,
+    userData: userDataWithoutEmail,
     recaptcha: {
       type: "String",
       validation: ['recaptcha']
