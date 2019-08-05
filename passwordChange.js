@@ -22,7 +22,7 @@ definition.action({
     let row = await EmailPassword.get(email)
     if (!row) throw service.error("notFound")
     if (row.user != user) throw service.error("notAuthorized")
-    if(row.passwordHash != oldPasswordHash) throw service.error("wrongPassword")
+    if(row.passwordHash != oldPasswordHash) throw { properties: { oldPasswordHash: "wrongPassword" }}
 
     service.trigger({
       type: "OnPasswordChange",
@@ -47,7 +47,7 @@ definition.action({
     if(results.length == 0) throw service.error("notFound")
     for(let row of results) {
       if (row.user != user) throw service.error("notAuthorized")
-      if (row.passwordHash != oldPasswordHash) throw service.error("wrongPassword")
+      if (row.passwordHash != oldPasswordHash) throw { properties: { oldPasswordHash: "wrongPassword" }}
     }
     service.trigger({
       type: "OnPasswordChange",

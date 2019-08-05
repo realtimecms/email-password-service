@@ -28,9 +28,9 @@ definition.action({
     let [oldEmailRow, newEmailRow, randomKey, userRow] =
         await Promise.all([oldEmailPromise, newEmailPromise, randomKeyPromise, userPromise])
     if(!oldEmailRow) throw service.error('notFound')
-    if(newEmailRow) throw service.error('taken')
+    if(newEmailRow) throw { properties: { newEmail: "taken" } }
     if(oldEmailRow.user != user) throw service.error('notAuthorized')
-    if(oldEmailRow.passwordHash != passwordHash) throw service.error('wrongPassword')
+    if(oldEmailRow.passwordHash != passwordHash) throw { properties: { passwordHash: "wrongPassword" }}
     let oldEmail = oldEmailRow.email
     emit("emailPassword", [{
       type: 'keyGenerated',
