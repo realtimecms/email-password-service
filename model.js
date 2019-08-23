@@ -22,7 +22,13 @@ const EmailPassword = definition.model({
       type: User
     }
   },
-  crud: {}
+  crud: {
+    options: {
+      access: (params, {client, service, visibilityTest}) => {
+        return client.roles.includes('admin')
+      }
+    }
+  }
 })
 
 const EmailKey = definition.model({
