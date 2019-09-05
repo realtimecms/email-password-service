@@ -11,6 +11,7 @@ const EmailPassword = definition.model({
   properties: {
     email: {
       type: String,
+      preFilter: email => email.toLowerCase(),
       validation: ['email']
     },
     passwordHash: {
