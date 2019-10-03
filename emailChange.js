@@ -13,9 +13,10 @@ definition.action({
   name: "startEmailChange",
   properties: {
     newEmail: EmailPassword.properties.email,
-    passwordHash: EmailPassword.properties.passwordHash
+    passwordHash: EmailPassword.properties.passwordHash,
+    lang: { type: String, validation: ['nonEmpty'] }
   },
-  async execute({ newEmail, passwordHash }, {client, service}, emit) {
+  async execute({ newEmail, passwordHash, lang }, {client, service}, emit) {
     if(!client.user) throw new Error("notAuthorized")
     const user = client.user
     let oldEmailPromise = EmailPassword.run(EmailPassword.table.filter({ user }).nth(0))
@@ -39,9 +40,10 @@ definition.action({
       key: randomKey,
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
+    const i18nLang = i18n.languages[lang] || i18n()
     emit("email", [{
       type: "sent",
-      email: i18n().emailPassword.changeEmailEmail({oldEmail, newEmail, key: randomKey, user: userRow})
+      email: i18nLang.emailPassword.changeEmailEmail({oldEmail, newEmail, key: randomKey, user: userRow})
     }])
   }
 })

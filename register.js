@@ -40,9 +40,10 @@ definition.action({
     recaptcha: {
       type: "String",
       validation: ['recaptcha']
-    }
+    },
+    lang: { type: String, validation: ['nonEmpty'] }
   },
-  async execute({ email, passwordHash, userData }, {service, client}, emit) {
+  async execute({ email, passwordHash, userData, lang }, {service, client}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)
     let registerKeysPromise = EmailKey.run(EmailKey.table
         .filter({ action: 'register',  used: false, email })
@@ -69,9 +70,10 @@ definition.action({
       email, passwordHash, userData: { ...userData, email: email },
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
+    const i18nLang = i18n.languages[lang] || i18n()
     emit("email", [{
       type: "sent",
-      email: i18n().emailPassword.registerEmail({ key: randomKey, email, userData })
+      email: i18nLang.emailPassword.registerEmail({ key: randomKey, email, userData })
     }])
     await service.trigger({
       type:"OnRegisterStart",
@@ -91,9 +93,10 @@ definition.event({
 definition.action({
   name: "resendRegisterKey",
   properties: {
-    email: { type: String }
+    email: EmailPassword.properties.email,
+    lang: { type: String, validation: ['nonEmpty'] }
   },
-  async execute({email}, {service}, emit) {
+  async execute({email, lang}, {service}, emit) {
     let registerKey = await EmailKey.run(EmailKey.table
         .filter({ action: 'register',  used: false, email })
         .filter(r => r("expire").gt(Date.now()))
@@ -107,9 +110,10 @@ definition.action({
       key: registerKey.key,
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
+    const i18nLang = i18n.languages[lang] || i18n()
     emit("email", [{
       type: "sent",
-      email: i18n().emailPassword.registerEmail({ key: registerKey.key, email, userData: registerKey.userData})
+      email: i18nLang.emailPassword.registerEmail({ key: registerKey.key, email, userData: registerKey.userData})
     }])
   }
 })

@@ -60,9 +60,10 @@ definition.action({
 definition.action({
   name: "startPasswordReset",
   properties: {
-    email: { type: EmailPassword, idOnly: true }
+    email: { type: EmailPassword, idOnly: true },
+    lang: { type: String, validation: ['nonEmpty'] }
   },
-  async execute({ email }, { service, client}, emit) {
+  async execute({ email, lang }, { service, client}, emit) {
     let userPromise = EmailPassword.run(EmailPassword.table.get(email).do(
         e => User.table.get(e('user'))
     ))
@@ -78,9 +79,10 @@ definition.action({
       key: randomKey,
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
+    const i18nLang = i18n.languages[lang] || i18n()
     emit("email", [{
       type: "sent",
-      email: i18n().emailPassword.resetPasswordEmail({email, key: randomKey, user})
+      email: i18nLang.emailPassword.resetPasswordEmail({email, key: randomKey, user})
     }])
   }
 })
