@@ -43,6 +43,9 @@ definition.action({
     },
     lang: { type: String, validation: ['nonEmpty'] }
   },
+  draft: {
+    steps: userData.registerSteps
+  },
   async execute({ email, passwordHash, userData, lang }, {service, client}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)
     let registerKeysPromise = EmailKey.run(EmailKey.table
