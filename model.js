@@ -12,7 +12,7 @@ const EmailPassword = definition.model({
     email: {
       type: String,
       preFilter: email => email.toLowerCase(),
-      validation: ['email']
+      validation: ['nonEmpty', 'email']
     },
     passwordHash: {
       type: String,
