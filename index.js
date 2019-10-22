@@ -3,6 +3,7 @@ if (require.main === module) require.main.rethinkdb = r
 
 const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
+definition.validators = require("./validation.js")
 
 require("./crud.js")
 

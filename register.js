@@ -34,7 +34,10 @@ let userDataWithoutEmail = {
 definition.action({
   name: "startRegister",
   properties: {
-    email: EmailPassword.properties.email,
+    email: {
+      ...EmailPassword.properties.email,
+      validation: ['nonEmpty', 'email', 'newUserEmail']
+    },
     passwordHash: EmailPassword.properties.passwordHash,
     userData: userDataWithoutEmail,
     recaptcha: {
@@ -50,7 +53,7 @@ definition.action({
     let emailPasswordPromise = EmailPassword.get(email)
     let registerKeysPromise = EmailKey.run(EmailKey.table
         .filter({ action: 'register',  used: false, email })
-        .filter(r=>r("expire").gt(Date.now()))
+        .filter(r=>r("expire").gt(Date.now())) /// TODO: use index
     ).then(cursor => {
           if(!cursor) return []
           return cursor.toArray()
@@ -61,9 +64,9 @@ definition.action({
     }))
     const [emailRow, registerKeys, randomKey] =
         await Promise.all([emailPasswordPromise, registerKeysPromise, randomKeyPromise])
-    if(emailRow) throw service.error("alreadyAdded")
-    //console.log("HOW?!!", email, emailRow)
-    if(registerKeys.length>0) throw service.error("registrationNotConfirmed")
+    if(emailRow) throw service.error("alreadyAdded") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
+    if(registerKeys.length>0)
+      throw service.error("registrationNotConfirmed") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
     const user = rtcms.generateUid()
     emit("emailPassword", [{
       type: 'keyGenerated',
