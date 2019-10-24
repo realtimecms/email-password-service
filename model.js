@@ -18,7 +18,7 @@ const EmailPassword = definition.model({
       type: String,
       secret: true,
       preFilter: passwordHash,
-      validation: ['safePassword']
+      validation: ['nonEmpty', 'safePassword']
     },
     user: {
       type: User
