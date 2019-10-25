@@ -42,6 +42,7 @@ definition.action({
     userData: userDataWithoutEmail,
     recaptcha: {
       type: "String",
+      singleUse: true,
       validation: ['recaptcha']
     },
     lang: { type: String, validation: ['nonEmpty'] }
