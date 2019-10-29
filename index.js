@@ -20,9 +20,9 @@ async function start() {
   await rtcms.updateService(definition)//, { force: true })
   const service = await rtcms.startService(definition, { runCommands: true, handleEvents: true })
 
-  rtcms.connectToDatabase().then(db => require("../config/metricsWriter.js")(db, definition.name, () => ({
+  require("../config/metricsWriter.js")(definition.name, () => ({
 
-  })))
+  }))
 }
 
 if (require.main === module) start().catch( error => { console.error(error); process.exit(1) })
