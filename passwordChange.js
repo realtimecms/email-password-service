@@ -60,7 +60,12 @@ definition.action({
 definition.action({
   name: "startPasswordReset",
   properties: {
-    email: { type: EmailPassword, idOnly: true },
+    email: {
+      type: EmailPassword,
+      idOnly: true,
+      preFilter: email => email.toLowerCase(),
+      validation: ['nonEmpty', 'email']
+    },
     lang: { type: String, validation: ['nonEmpty'] }
   },
   async execute({ email, lang }, { service, client}, emit) {
