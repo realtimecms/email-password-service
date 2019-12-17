@@ -147,6 +147,18 @@ definition.action({
     if(emailRow) throw evs.error('alreadyAdded')
     let {user, email, passwordHash, userData} = registerKeyRow
     userData.email = email
+    userData.slug = await service.triggerService('slugs', {
+      type: "CreateSlug",
+      group: "user",
+      to: user
+    })
+    await service.triggerService('slugs', {
+      type: "TakeSlug",
+      group: "user",
+      path: user,
+      to: user,
+      redirect: userData.slug
+    })
     emit("emailPassword", [{
       type: "keyUsed",
       key
