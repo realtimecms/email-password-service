@@ -4,6 +4,7 @@ if (require.main === module) require.main.rethinkdb = r
 const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 definition.validators = require("./validation.js")
+const autoSecurityProcessor = require('../security-service/autoSecurity.js')
 
 require("./crud.js")
 
@@ -16,7 +17,7 @@ require("./passwordChange.js")
 module.exports = definition
 
 async function start() {
-  rtcms.processServiceDefinition(definition, [ ...rtcms.defaultProcessors ])
+  rtcms.processServiceDefinition(definition, [ ...rtcms.defaultProcessors, autoSecurityProcessor ])
   await rtcms.updateService(definition)//, { force: true })
   const service = await rtcms.startService(definition, { runCommands: true, handleEvents: true })
 

@@ -43,7 +43,7 @@ definition.action({
     recaptcha: {
       type: "String",
       singleUse: true,
-      validation: ['recaptcha']
+      validation: ['recaptcha', 'nonEmpty']
     },
     lang: { type: String, validation: ['nonEmpty'] }
   },
