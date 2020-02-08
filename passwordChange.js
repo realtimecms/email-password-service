@@ -69,9 +69,9 @@ definition.action({
     lang: { type: String, validation: ['nonEmpty'] }
   },
   async execute({ email, lang }, { service, client}, emit) {
-    let userPromise = EmailPassword.run(EmailPassword.table.get(email).do(
-        e => User.table.get(e('user'))
-    ))
+    const emailRow = await EmailPassword.get(email)
+    if(!emailRow) throw new Error("not_found")
+    let userPromise = User.get(emailRow.user)
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
       if(err) reject(err)
       resolve(buf.toString('hex')+(crypto.createHash('sha256').update(email).digest('hex').slice(0,8)))
