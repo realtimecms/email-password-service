@@ -1,5 +1,4 @@
 const crypto = require('crypto')
-const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 
 require('../../i18n/ejs-require.js')
@@ -41,10 +40,12 @@ definition.action({
   async execute({ oldPasswordHash, newPasswordHash }, { service, client}, emit) {
     if(!client.user) throw new service.error("notAuthorized")
     const user = client.user
-    let cursor = await EmailPassword.run(EmailPassword.table.filter({user}))
-    if(!cursor) service.error("notFound")
-    let results = await cursor.toArray()
-    if(results.length == 0) throw service.error("notFound")
+    const results = await service.dao.get(['database', 'query', service.databaseName, `(${
+        async (input, output, { user }) =>
+            await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
+              if(obj && obj.user == user) output.put(obj)
+            })
+    })`, { user }])
     for(let row of results) {
       if (row.user != user) throw service.error("notAuthorized")
       if (row.passwordHash != oldPasswordHash) throw { properties: { oldPasswordHash: "wrongPassword" }}
@@ -72,10 +73,13 @@ definition.action({
     const emailRow = await EmailPassword.get(email)
     if(!emailRow) throw new Error("not_found")
     let userPromise = User.get(emailRow.user)
-    let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
-      if(err) reject(err)
-      resolve(buf.toString('hex')+(crypto.createHash('sha256').update(email).digest('hex').slice(0,8)))
-    }))
+    let randomKeyPromise = new Promise((resolve, reject) =>
+        crypto.randomBytes(16, (err, buf) => {
+          if(err) reject(err)
+          resolve(buf.toString('hex')+(crypto.createHash('sha256')
+              .update(email).digest('hex').slice(0,8)))
+        })
+    )
     let [user, randomKey] = await Promise.all([userPromise, randomKeyPromise])
     emit("emailPassword", [{
       type: 'keyGenerated',
@@ -128,9 +132,12 @@ definition.event({
     }
   },
   async execute({ user, passwordHash }) {
-    let cursor = await EmailPassword.run(EmailPassword.table.filter({user}))
-    if(!cursor) service.error("notFound")
-    let results = await cursor.toArray()
+    const result = await service.dao.get(['database', 'query', service.databaseName, `(${
+        async (input, output, { user }) =>
+            await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
+              if(obj && obj.user == user) output.put(obj)
+            })
+    })`, { user }])
     if(results.length == 0) throw service.error("notFound")
     for(let row of results) {
       EmailPassword.update(row.email, { passwordHash })

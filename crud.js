@@ -1,4 +1,4 @@
-const rtcms = require("realtime-cms")
+const app = require('./app.js')
 const definition = require("./definition.js")
 
 const {User, EmailPassword} = require("./model.js")
@@ -16,14 +16,14 @@ definition.action({
   async execute({ email, passwordHash }, context, emit) {
     const emailRow = await EmailPassword.get(email)
     if(emailRow) throw new Error("alreadyAdded")
-    let user = rtcms.generateUid()
-    emit([{
+    let user = app.generateUid()
+    emit({
       type: "EmailPasswordCreated",
       emailPassword: email,
       data: {
         email, passwordHash, user
       }
-    }])
+    })
     emit("users", [{
       type: "UserCreated",
       user
@@ -58,14 +58,14 @@ definition.action({
     const userRow = await User.get(user)
     if(emailRow) throw new Error("alreadyAdded")
     if(!userRow) throw new Error("userNotFound")
-    emit([{
+    emit({
       type: "EmailPasswordCreated",
       emailPassword: email,
       data: {
         email, passwordHash, user
       }
-    }])
-    emit("users", [{
+    })
+    emit("users", {
       type: "loginMethodAdded",
       user,
       method: {
@@ -73,7 +73,7 @@ definition.action({
         id: email,
         email
       }
-    }])
+    })
     return email
   }
 })
@@ -129,11 +129,11 @@ definition.action({
     console.log("EMAIL ROW", emailRow)
     const userRow = await User.get(emailRow.user)
     if(!userRow) throw new Error("userNotFound")
-    emit([{
+    emit({
       type: "EmailPasswordDeleted",
       emailPassword
-    }])
-    emit("users", [{
+    })
+    emit("users", {
       type: "loginMethodRemoved",
       user: emailRow.user,
       method: {
@@ -141,7 +141,7 @@ definition.action({
         id: emailPassword,
         email: emailPassword
       }
-    }])
+    })
     return emailPassword
   }
 })
@@ -154,8 +154,13 @@ definition.event({
       idOnly: true
     }
   },
-  async execute({ user }) {
-    await EmailPassword.run(EmailPassword.table.filter({ user }).delete())
+  async execute({ user }, { service }) {
+    await service.dao.get(['database', 'query', service.databaseName, `(${
+      async (input, output, { user }) =>
+        await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
+          if(obj && obj.user == user) output.table("emailPassword_EmailPassword").delete(obj.id)
+        })
+    })`, { user }])
   }
 })
 
@@ -168,9 +173,9 @@ definition.trigger({
     }
   },
   async execute({ user }, context, emit) {
-    emit([{
+    emit({
       type: "UserDeleted",
       user
-    }])
+    })
   }
 })

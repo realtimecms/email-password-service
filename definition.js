@@ -1,8 +1,7 @@
-const rtcms = require("realtime-cms")
+const app = require('./app.js')
 
-const definition = rtcms.createServiceDefinition({
-  name: "emailPassword",
-  eventSourcing: true
+const definition = app.createServiceDefinition({
+  name: "emailPassword"
 })
 
 module.exports = definition

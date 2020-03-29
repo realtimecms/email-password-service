@@ -1,7 +1,6 @@
-const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 
-const {User, EmailPassword, EmailKey} = require("./model.js")
+const { User, EmailPassword, EmailKey } = require("./model.js")
 
 const passwordHash = require("../config/passwordHash.js")
 
@@ -13,13 +12,13 @@ definition.action({
   },
   autoSecurity: true,
   async execute({ email, passwordHash }, {service, client}, emit) {
-    let registerKeyPromise = EmailKey.run(EmailKey.table
-      .filter({ action: 'register',  used: false, email })
-      .filter(r=>r("expire").gt(Date.now())))
-        .then(cursor => {
-          if(!cursor) return [];
-          return cursor.toArray().then( arr => arr[0] );
-        })
+    const registerKeyPromise = (service.dao.get(['database', 'query', service.databaseName, `(${
+        async (input, output, { email }) =>
+            await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
+              if(obj && obj.action == 'register' && !obj.used 
+                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
+            })
+    })`, { email }])).then(v => v[0])
     let emailPasswordPromise = EmailPassword.get(email)
     let [registerKeyRow, emailPasswordRow] = await Promise.all([registerKeyPromise, emailPasswordPromise])
     if(!emailPasswordRow && registerKeyRow) throw service.error("registrationNotConfirmed")

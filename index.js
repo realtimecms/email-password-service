@@ -1,7 +1,5 @@
-const r = require.main.rethinkdb || require('rethinkdb')
-if (require.main === module) require.main.rethinkdb = r
+const app = require('./app.js')
 
-const rtcms = require("realtime-cms")
 const definition = require("./definition.js")
 definition.validators = require("./validation.js")
 const autoSecurityProcessor = require('../security-service/autoSecurity.js')
@@ -17,14 +15,13 @@ require("./passwordChange.js")
 module.exports = definition
 
 async function start() {
-  rtcms.processServiceDefinition(definition, [ ...rtcms.defaultProcessors, autoSecurityProcessor ])
-  await rtcms.updateService(definition)//, { force: true })
-  const service = await rtcms.startService(definition, { runCommands: true, handleEvents: true })
+  app.processServiceDefinition(definition, [ ...app.defaultProcessors, autoSecurityProcessor ])
+  await app.updateService(definition)//, { force: true })
+  const service = await app.startService(definition, { runCommands: true, handleEvents: true })
 
-  require("../config/metricsWriter.js")(definition.name, () => ({
+  /*require("../config/metricsWriter.js")(definition.name, () => ({
 
-  }))
+  }))*/
 }
 
 if (require.main === module) start().catch( error => { console.error(error); process.exit(1) })
-

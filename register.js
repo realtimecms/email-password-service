@@ -1,6 +1,7 @@
 const crypto = require('crypto')
+const ReactiveDao = require("@live-change/dao")
 
-const rtcms = require("realtime-cms")
+const app = require('./app.js')
 const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")
@@ -52,13 +53,13 @@ definition.action({
   },
   async execute({ email, passwordHash, userData, lang }, {service, client}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)
-    let registerKeysPromise = EmailKey.run(EmailKey.table
-        .filter({ action: 'register',  used: false, email })
-        .filter(r=>r("expire").gt(Date.now())) /// TODO: use index
-    ).then(cursor => {
-          if(!cursor) return []
-          return cursor.toArray()
-        })
+    const registerKeysPromise = (service.dao.get(['database', 'query', service.databaseName, `(${
+        async (input, output, { email }) =>
+            await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
+              if(obj && obj.action == 'register' && !obj.used
+                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
+            })
+    })`, { email }]))
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
       if(err) reject(err)
       resolve(buf.toString('hex')+(crypto.createHash('sha256').update(email).digest('hex').slice(0,8)))
@@ -68,7 +69,7 @@ definition.action({
     if(emailRow) throw service.error("alreadyAdded") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
     if(registerKeys.length>0)
       throw service.error("registrationNotConfirmed") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
-    const user = rtcms.generateUid()
+    const user = app.generateUid()
     emit("emailPassword", [{
       type: 'keyGenerated',
       action: 'register',
@@ -104,13 +105,13 @@ definition.action({
     lang: { type: String, validation: ['nonEmpty'] }
   },
   async execute({email, lang}, {service}, emit) {
-    let registerKey = await EmailKey.run(EmailKey.table
-        .filter({ action: 'register',  used: false, email })
-        .filter(r => r("expire").gt(Date.now()))
-    ).then(cursor => {
-      if(!cursor) return [];
-      return cursor.toArray().then( arr => arr[0] );
-    })
+    const registerKey = await (service.dao.get(['database', 'query', service.databaseName, `(${
+        async (input, output, { email }) =>
+            await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
+              if(obj && obj.action == 'register' && !obj.used
+                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
+            })
+    })`, { email }]).then(v => v && v[0]))
     if(!registerKey) throw new evs.error("notFound")
     emit("emailPassword", [{
       type: 'keyProlonged',
@@ -219,9 +220,28 @@ definition.view({
     type: EmailKey
   },
   rawRead: true,
-  async read({ key }, cd, method) {
-    if(method == "get") return EmailKey.table.get(key).without('passwordHash')
-    return EmailKey.table.get(key).changes({includeInitial: true})
-        .without({new_val: "passwordHash", old_val: "passwordHash"})
+  async get({ key }, { service }) {
+    const obj = await service.dao.get(['database', 'tableObject', service.databaseName, 'emailPassword_EmailKey', key])
+    return { ...obj, passwordHash: null }
+  },
+  observable({ key }, { service }) {
+    const keyObservable = service.dao.observable(['database', 'tableObject', service.databaseName,
+      'emailPassword_EmailKey', key])
+    const outObservable = new ReactiveDao.ObservableValue(keyObservable.value)
+    const observer = (signal, value) => {
+      if(signal != 'set') return outObservable.error("unknownSignal")
+      outObservable.set(value && { ...value, passwordHash: null })
+    }
+    const oldDispose = outObservable.dispose
+    const oldRespawn = outObservable.respwan
+    outObservable.dispose = () => {
+      keyObservable.unobserve(observer)
+      oldDispose.call(outObservable)
+    }
+    outObservable.respwan = () => {
+      keyObservable.observe(observer)
+      oldRespawn.call(outObservable)
+    }
+    return outObservable
   }
 })
