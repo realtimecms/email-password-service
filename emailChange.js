@@ -35,9 +35,9 @@ definition.action({
     let userPromise = User.get(user)
     let [oldEmailRow, newEmailRow, randomKey, userRow] =
         await Promise.all([oldEmailPromise, newEmailPromise, randomKeyPromise, userPromise])
-    if(!oldEmailRow) throw service.error('notFound')
+    if(!oldEmailRow) throw new Error('notFound')
     if(newEmailRow) throw { properties: { newEmail: "taken" } }
-    if(oldEmailRow.user != user) throw service.error('notAuthorized')
+    if(oldEmailRow.user != user) throw new Error('notAuthorized')
     if(oldEmailRow.passwordHash != passwordHash) throw { properties: { passwordHash: "wrongPassword" }}
     let oldEmail = oldEmailRow.email
     emit("emailPassword", {
@@ -62,15 +62,15 @@ definition.action({
   },
   async execute({ key }, {client, service}, emit) {
     let emailKey = await EmailKey.get(key)
-    if(!emailKey) throw service.error('notFound')
-    if(emailKey.action != 'emailChange') throw service.error('notFound')
-    if(emailKey.used) throw service.error('used')
-    if(emailKey.expire < Date.now()) throw service.error('expired')
+    if(!emailKey) throw new Error('notFound')
+    if(emailKey.action != 'emailChange') throw new Error('notFound')
+    if(emailKey.used) throw new Error('used')
+    if(emailKey.expire < Date.now()) throw new Error('expired')
     let oldEmailPromise = EmailPassword.get(emailKey.oldEmail)
     let newEmailPromise = EmailPassword.get(emailKey.newEmail)
     let [oldEmailRow, newEmailRow] = await Promise.all([oldEmailPromise, newEmailPromise])
-    if(newEmailRow) throw service.error('taken')
-    if(!oldEmailRow) throw service.error('notFound')
+    if(newEmailRow) throw new Error('taken')
+    if(!oldEmailRow) throw new Error('notFound')
     emit('emailPassword', [{
       type: 'EmailPasswordCreated',
       emailPassword: emailKey.newEmail,

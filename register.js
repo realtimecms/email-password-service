@@ -66,9 +66,9 @@ definition.action({
     }))
     const [emailRow, registerKeys, randomKey] =
         await Promise.all([emailPasswordPromise, registerKeysPromise, randomKeyPromise])
-    if(emailRow) throw service.error("alreadyAdded") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
+    if(emailRow) throw new Error("alreadyAdded") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
     if(registerKeys.length>0)
-      throw service.error("registrationNotConfirmed") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
+      throw new Error("registrationNotConfirmed") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
     const user = app.generateUid()
     emit("emailPassword", [{
       type: 'keyGenerated',
@@ -112,7 +112,7 @@ definition.action({
                   && obj.email == email && obj.expire > Date.now()) output.put(obj)
             })
     })`, { email }]).then(v => v && v[0]))
-    if(!registerKey) throw new evs.error("notFound")
+    if(!registerKey) throw new new Error("notFound")
     emit("emailPassword", [{
       type: 'keyProlonged',
       key: registerKey.key,
@@ -141,11 +141,11 @@ definition.action({
   },
   async execute({ key }, {service, client}, emit) {
     let registerKeyRow = await EmailKey.get(key)
-    if(!registerKeyRow) throw service.error('notFound')
-    if(registerKeyRow.expire < Date.now()) throw service.error('expired')
-    if(registerKeyRow.used) throw service.error('used')
+    if(!registerKeyRow) throw new Error('notFound')
+    if(registerKeyRow.expire < Date.now()) throw new Error('expired')
+    if(registerKeyRow.used) throw new Error('used')
     let emailRow = await EmailPassword.get(registerKeyRow.email)
-    if(emailRow) throw evs.error('alreadyAdded')
+    if(emailRow) throw new Error('alreadyAdded')
     let {user, email, passwordHash, userData} = registerKeyRow
     userData.email = email
     const slug = await service.triggerService('slugs', {

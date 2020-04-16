@@ -16,11 +16,11 @@ definition.action({
     newPasswordHash: EmailPassword.properties.passwordHash
   },
   async execute({ email, oldPasswordHash, newPasswordHash }, { service, client }, emit) {
-    if(!client.user) throw new service.error("notAuthorized")
+    if(!client.user) throw new new Error("notAuthorized")
     const user = client.user
     let row = await EmailPassword.get(email)
-    if (!row) throw service.error("notFound")
-    if (row.user != user) throw service.error("notAuthorized")
+    if (!row) throw new Error("notFound")
+    if (row.user != user) throw new Error("notAuthorized")
     if(row.passwordHash != oldPasswordHash) throw { properties: { oldPasswordHash: "wrongPassword" }}
 
     service.trigger({
@@ -38,7 +38,7 @@ definition.action({
     newPasswordHash: EmailPassword.properties.passwordHash
   },
   async execute({ oldPasswordHash, newPasswordHash }, { service, client}, emit) {
-    if(!client.user) throw new service.error("notAuthorized")
+    if(!client.user) throw new new Error("notAuthorized")
     const user = client.user
     const results = await service.dao.get(['database', 'query', service.databaseName, `(${
         async (input, output, { user }) =>
@@ -47,7 +47,7 @@ definition.action({
             })
     })`, { user }])
     for(let row of results) {
-      if (row.user != user) throw service.error("notAuthorized")
+      if (row.user != user) throw new Error("notAuthorized")
       if (row.passwordHash != oldPasswordHash) throw { properties: { oldPasswordHash: "wrongPassword" }}
     }
     service.trigger({
@@ -104,12 +104,12 @@ definition.action({
   },
   async execute({ key, newPasswordHash }, { service, client}, emit) {
     let emailKey = await EmailKey.get(key)
-    if(!emailKey) throw service.error('notFound')
-    if(emailKey.action != 'resetPassword') throw service.error('notFound')
-    if(emailKey.used) throw service.error('used')
-    if(emailKey.expire < Date.now()) throw service.error('expired')
+    if(!emailKey) throw new Error('notFound')
+    if(emailKey.action != 'resetPassword') throw new Error('notFound')
+    if(emailKey.used) throw new Error('used')
+    if(emailKey.expire < Date.now()) throw new Error('expired')
     let emailRow = await EmailPassword.get(emailKey.email)
-    if(!emailRow) throw service.error('notFound')
+    if(!emailRow) throw new Error('notFound')
     service.trigger({
       type: "OnPasswordChange",
       user: emailRow.user,
@@ -138,7 +138,7 @@ definition.event({
               if(obj && obj.user == user) output.put(obj)
             })
     })`, { user }])
-    if(results.length == 0) throw service.error("notFound")
+    if(results.length == 0) throw new Error("notFound")
     for(let row of results) {
       EmailPassword.update(row.email, { passwordHash })
     }

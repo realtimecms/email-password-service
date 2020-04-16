@@ -21,7 +21,7 @@ definition.action({
     })`, { email }])).then(v => v[0])
     let emailPasswordPromise = EmailPassword.get(email)
     let [registerKeyRow, emailPasswordRow] = await Promise.all([registerKeyPromise, emailPasswordPromise])
-    if(!emailPasswordRow && registerKeyRow) throw service.error("registrationNotConfirmed")
+    if(!emailPasswordRow && registerKeyRow) throw new Error("registrationNotConfirmed")
     if (!emailPasswordRow) {
       await service.trigger({
         type: "securityEvent",
@@ -30,7 +30,7 @@ definition.action({
           keys: { ip: client.ip, session: client.session, user: client.user }
         }
       })
-      throw service.error("notFound")
+      throw new Error("notFound")
     }
     if(emailPasswordRow.passwordHash != passwordHash) {
       await service.trigger({
@@ -40,10 +40,10 @@ definition.action({
           keys: { ip: client.ip, session: client.session, user: client.user }
         }
       })
-      throw service.error("wrongPassword")
+      throw new Error("wrongPassword")
     }
     let userRow = await User.get(emailPasswordRow.user)
-    if(!userRow) throw service.error("internalServerError")
+    if(!userRow) throw new Error("internalServerError")
     emit("session", [{
       type: "loggedIn",
       user: emailPasswordRow.user,
