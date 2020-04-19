@@ -242,6 +242,7 @@ definition.view({
       keyObservable.observe(observer)
       oldRespawn.call(outObservable)
     }
+    keyObservable.observe(observer)
     return outObservable
   }
 })
