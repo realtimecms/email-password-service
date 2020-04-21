@@ -112,7 +112,7 @@ definition.action({
                   && obj.email == email && obj.expire > Date.now()) output.put(obj)
             })
     })`, { email }]).then(v => v && v[0]))
-    if(!registerKey) throw new new Error("notFound")
+    if(!registerKey) throw 'notFound'
     emit("emailPassword", [{
       type: 'keyProlonged',
       key: registerKey.key,
@@ -141,11 +141,11 @@ definition.action({
   },
   async execute({ key }, {service, client}, emit) {
     let registerKeyRow = await EmailKey.get(key)
-    if(!registerKeyRow) throw new Error('notFound')
-    if(registerKeyRow.expire < Date.now()) throw new Error('expired')
+    if(!registerKeyRow) throw 'notFound'
+    if(registerKeyRow.expire < Date.now()) throw 'expired'
     if(registerKeyRow.used) throw new Error('used')
     let emailRow = await EmailPassword.get(registerKeyRow.email)
-    if(emailRow) throw new Error('alreadyAdded')
+    if(emailRow) throw 'alreadyAdded'
     let {user, email, passwordHash, userData} = registerKeyRow
     userData.email = email
     const slug = await service.triggerService('slugs', {
@@ -222,15 +222,15 @@ definition.view({
   rawRead: true,
   async get({ key }, { service }) {
     const obj = await service.dao.get(['database', 'tableObject', service.databaseName, 'emailPassword_EmailKey', key])
-    return { ...obj, passwordHash: null }
+    return obj && { ...obj, passwordHash: undefined }
   },
   observable({ key }, { service }) {
-    const keyObservable = service.dao.observable(['database', 'tableObject', service.databaseName,
-      'emailPassword_EmailKey', key])
+    const keyObservable = service.dao.observable(
+        ['database', 'tableObject', service.databaseName, 'emailPassword_EmailKey', key])
     const outObservable = new ReactiveDao.ObservableValue(keyObservable.value)
     const observer = (signal, value) => {
       if(signal != 'set') return outObservable.error("unknownSignal")
-      outObservable.set(value && { ...value, passwordHash: null })
+      outObservable.set(value && { ...value, passwordHash: undefined })
     }
     const oldDispose = outObservable.dispose
     const oldRespawn = outObservable.respwan

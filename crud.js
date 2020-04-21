@@ -93,7 +93,7 @@ definition.action({
   },
   async execute({ emailPassword, passwordHash }, { client, service }, emit) {
     const emailRow = await EmailPassword.get(emailPassword)
-    if(!emailRow) throw new Error("notFound")
+    if(!emailRow) throw 'notFound'
     /*emit([{
       type: "EmailPasswordUpdated",
       emailPassword,
@@ -125,7 +125,7 @@ definition.action({
   },
   async execute({ emailPassword }, context, emit) {
     const emailRow = await EmailPassword.get(emailPassword)
-    if(!emailRow) throw new Error("notFound")
+    if(!emailRow) throw 'notFound'
     console.log("EMAIL ROW", emailRow)
     const userRow = await User.get(emailRow.user)
     if(!userRow) throw new Error("userNotFound")
