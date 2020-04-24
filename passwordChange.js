@@ -131,8 +131,8 @@ definition.event({
       idOnly: true
     }
   },
-  async execute({ user, passwordHash }) {
-    const result = await service.dao.get(['database', 'query', service.databaseName, `(${
+  async execute({ user, passwordHash }, { service }) {
+    const results = await service.dao.get(['database', 'query', service.databaseName, `(${
         async (input, output, { user }) =>
             await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
               if(obj && obj.user == user) output.put(obj)
