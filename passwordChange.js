@@ -71,7 +71,7 @@ definition.action({
   },
   async execute({ email, lang }, { service, client}, emit) {
     const emailRow = await EmailPassword.get(email)
-    if(!emailRow) throw new Error("not_found")
+    if(!emailRow) throw "not_found"
     let userPromise = User.get(emailRow.user)
     let randomKeyPromise = new Promise((resolve, reject) =>
         crypto.randomBytes(16, (err, buf) => {
@@ -107,7 +107,7 @@ definition.action({
     if(!emailKey) throw 'notFound'
     if(emailKey.action != 'resetPassword') throw 'notFound'
     if(emailKey.used) throw new Error('used')
-    if(emailKey.expire < Date.now()) throw new Error('expired')
+    if(emailKey.expire < Date.now()) throw 'expired'
     let emailRow = await EmailPassword.get(emailKey.email)
     if(!emailRow) throw 'notFound'
     service.trigger({
@@ -131,8 +131,8 @@ definition.event({
       idOnly: true
     }
   },
-  async execute({ user, passwordHash }) {
-    const result = await service.dao.get(['database', 'query', service.databaseName, `(${
+  async execute({ user, passwordHash }, { service }) {
+    const results = await service.dao.get(['database', 'query', service.databaseName, `(${
         async (input, output, { user }) =>
             await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
               if(obj && obj.user == user) output.put(obj)
