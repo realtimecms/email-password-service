@@ -68,9 +68,9 @@ definition.action({
     }))
     const [emailRow, registerKeys, randomKey] =
         await Promise.all([emailPasswordPromise, registerKeysPromise, randomKeyPromise])
-    if(emailRow) throw new Error("alreadyAdded") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
+    if(emailRow) throw "alreadyAdded" /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
     if(registerKeys.length > 0)
-      throw new Error("registrationNotConfirmed") /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
+      throw "registrationNotConfirmed" /// DON'T REMOVE IT - IT MUST BE REVALIDATED HERE
     const user = app.generateUid()
     emit("emailPassword", [{
       type: 'keyGenerated',

@@ -70,8 +70,18 @@ definition.action({
     lang: { type: String, validation: ['nonEmpty'] }
   },
   async execute({ email, lang }, { service, client}, emit) {
-    const emailRow = await EmailPassword.get(email)
-    if(!emailRow) throw "not_found"
+    const emailRowPromise = EmailPassword.get(email)
+    const registerKeysPromise = (service.dao.get(['database', 'query', service.databaseName, `(${
+        async (input, output, { email }) =>
+            await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
+              if(obj && obj.action == 'register' && !obj.used
+                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
+            })
+    })`, { email }]))
+    const [emailRow, registerKeys] = await Promise.all([emailRowPromise, registerKeysPromise])
+    if(registerKeys.length > 0)
+      throw "registrationNotConfirmed"
+    if(!emailRow) throw "notFound"
     let userPromise = User.get(emailRow.user)
     let randomKeyPromise = new Promise((resolve, reject) =>
         crypto.randomBytes(16, (err, buf) => {
