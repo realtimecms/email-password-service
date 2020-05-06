@@ -8,6 +8,7 @@ const {User, EmailPassword, EmailKey} = require("./model.js")
 
 const passwordHash = require('../config/passwordHash.js')
 const userData = require('../config/userData.js')(definition)
+const userDataDefinition = userData
 
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
@@ -35,6 +36,7 @@ let userDataWithoutEmail = {
 definition.action({
   name: "startRegister",
   properties: {
+    ...userData.registerFields,
     email: {
       ...EmailPassword.properties.email,
       validation: ['nonEmpty', 'email', 'newUserEmail']
@@ -148,8 +150,8 @@ definition.action({
     if(emailRow) throw 'alreadyAdded'
     let {user, email, passwordHash, userData} = registerKeyRow
     userData.email = email
-    const slug = await (userData.createSlug ?
-        userData.createSlug(registerKeyRow, service)
+    const slug = await (userDataDefinition.createSlug ?
+        userDataDefinition.createSlug(registerKeyRow, service)
         : service.triggerService('slugs', {
           type: "CreateSlug",
           group: "user",
