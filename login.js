@@ -27,7 +27,7 @@ definition.action({
         type: "securityEvent",
         event: {
           type: "login-failed",
-          keys: { ip: client.ip, session: client.session, user: client.user }
+          keys: { ip: client.ip, session: client.sessionId, user: client.user }
         }
       })
       throw "notFound"
@@ -37,7 +37,7 @@ definition.action({
         type: "securityEvent",
         event: {
           type: "login-failed",
-          keys: { ip: client.ip, session: client.session, user: client.user }
+          keys: { ip: client.ip, session: client.sessionId, user: client.user }
         }
       })
       throw "wrongPassword"
