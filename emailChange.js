@@ -48,9 +48,9 @@ definition.action({
       expire: Date.now() + (24 * 60 * 60 * 1000)
     })
     const i18nLang = i18n.languages[lang] || i18n()
-    emit("email", {
-      type: "sent",
-      email: i18nLang.emailPassword.changeEmailEmail({oldEmail, newEmail, key: randomKey, user: userRow})
+    await service.trigger({
+      type:"sendEmail",
+      email: i18nLang.emailPassword.changeEmailEmail({ oldEmail, newEmail, key: randomKey, user: userRow })
     })
   }
 })

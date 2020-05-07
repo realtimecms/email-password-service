@@ -81,10 +81,10 @@ definition.action({
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
     const i18nLang = i18n.languages[lang] || i18n()
-    emit("email", [{
-      type: "sent",
+    await service.trigger({
+      type:"sendEmail",
       email: i18nLang.emailPassword.registerEmail({ key: randomKey, email, userData })
-    }])
+    })
     await service.trigger({
       type:"OnRegisterStart",
       session: client.sessionId,
@@ -121,10 +121,10 @@ definition.action({
       expire: Date.now() + (24 * 60 * 60 * 1000)
     }])
     const i18nLang = i18n.languages[lang] || i18n()
-    emit("email", [{
-      type: "sent",
+    await service.trigger({
+      type:"sendEmail",
       email: i18nLang.emailPassword.registerEmail({ key: registerKey.key, email, userData: registerKey.userData})
-    }])
+    })
   }
 })
 
