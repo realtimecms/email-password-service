@@ -64,12 +64,12 @@ definition.action({
     let emailKey = await EmailKey.get(key)
     if(!emailKey) throw 'notFound'
     if(emailKey.action != 'emailChange') throw 'notFound'
-    if(emailKey.used) throw new Error('used')
-    if(emailKey.expire < Date.now()) throw new Error('expired')
+    if(emailKey.used) throw 'used'
+    if(emailKey.expire < Date.now()) throw 'expired'
     let oldEmailPromise = EmailPassword.get(emailKey.oldEmail)
     let newEmailPromise = EmailPassword.get(emailKey.newEmail)
     let [oldEmailRow, newEmailRow] = await Promise.all([oldEmailPromise, newEmailPromise])
-    if(newEmailRow) throw new Error('taken')
+    if(newEmailRow) throw 'taken'
     if(!oldEmailRow) throw 'notFound'
     emit('emailPassword', [{
       type: 'EmailPasswordCreated',
