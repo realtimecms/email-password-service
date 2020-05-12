@@ -64,7 +64,8 @@ definition.action({
     })`, { email }]))
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
       if(err) reject(err)
-      resolve(buf.toString('hex')+(crypto.createHash('sha256').update(email).digest('hex').slice(0,8)))
+      resolve(buf.toString('hex')
+          + (crypto.createHash('sha256').update(email).digest('hex').slice(0,8)) )
     }))
     const [emailRow, registerKeys, randomKey] =
         await Promise.all([emailPasswordPromise, registerKeysPromise, randomKeyPromise])
