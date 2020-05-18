@@ -71,6 +71,12 @@ definition.action({
     let [oldEmailRow, newEmailRow] = await Promise.all([oldEmailPromise, newEmailPromise])
     if(newEmailRow) throw 'taken'
     if(!oldEmailRow) throw 'notFound'
+    await service.trigger({
+      type: "OnUserEmailChange",
+      user: emailKey.user,
+      oldEmail: emailKey.oldEmail,
+      newEmail: emailKey.newEmail
+    })
     emit('emailPassword', [{
       type: 'EmailPasswordCreated',
       emailPassword: emailKey.newEmail,
@@ -101,6 +107,14 @@ definition.action({
         type: "emailPassword",
         id: emailKey.oldEmail,
         email: emailKey.oldEmail
+      }
+    }, {
+      type: 'UserUpdated',
+      user: emailKey.user,
+      data: {
+        userData: {
+          email: emailKey.newEmail
+        }
       }
     }])
   }
