@@ -155,7 +155,7 @@ definition.event({
     }
   },
   async execute({ user }, { service }) {
-    await service.dao.get(['database', 'query', service.databaseName, `(${
+    await app.dao.request(['database', 'query', app.databaseName, `(${
       async (input, output, { user }) =>
         await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
           if(obj && obj.user == user) output.table("emailPassword_EmailPassword").delete(obj.id)
@@ -165,7 +165,7 @@ definition.event({
 })
 
 definition.trigger({
-  name: "OnUserDelete",
+  name: "UserDeleted",
   properties: {
     user: {
       type: User,
