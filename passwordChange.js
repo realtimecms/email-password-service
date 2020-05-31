@@ -81,7 +81,7 @@ definition.action({
     const [emailRow, registerKeys] = await Promise.all([emailRowPromise, registerKeysPromise])
     if(registerKeys.length > 0)
       throw "registrationNotConfirmed"
-    if(!emailRow) throw "notFound"
+    if(!emailRow) throw { properties: { email: "notFound" }}
     let userPromise = User.get(emailRow.user)
     let randomKeyPromise = new Promise((resolve, reject) =>
         crypto.randomBytes(16, (err, buf) => {

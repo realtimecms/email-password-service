@@ -92,7 +92,7 @@ definition.action({
       type: "keyUsed",
       key
     }])
-    emit("user", [{
+    emit("users", [{
       type: "loginMethodAdded",
       user: emailKey.user,
       method: {
