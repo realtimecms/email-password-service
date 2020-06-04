@@ -181,7 +181,8 @@ definition.action({
       user,
       data: {
         userData,
-        slug
+        slug,
+        display: await userDataDefinition.getDisplay({ userData })
       }
     },{
       type: "loginMethodAdded",
