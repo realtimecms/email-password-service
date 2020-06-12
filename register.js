@@ -24,12 +24,12 @@ definition.event({
 })
 
 let propertiesWithoutEmail = {}
-for(let propName in userData.properties) {
+for(let propName in userData.field.properties) {
   if(propName == 'email') continue;
-  propertiesWithoutEmail[propName] = userData.properties[propName]
+  propertiesWithoutEmail[propName] = userData.field.properties[propName]
 }
 let userDataWithoutEmail = {
-  ...userData,
+  ...userData.field,
   properties: propertiesWithoutEmail
 }
 
