@@ -4,7 +4,7 @@ const definition = require("./definition.js")
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
 
-const {User, EmailPassword, EmailKey} = require("./model.js")
+const { User, EmailPassword, EmailKey } = require("./model.js")
 
 const passwordHash = require("../config/passwordHash.js")
 

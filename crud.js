@@ -1,7 +1,7 @@
 const app = require('./app.js')
 const definition = require("./definition.js")
 
-const {User, EmailPassword} = require("./model.js")
+const { User, EmailPassword } = require("./model.js")
 
 definition.action({
   name: "EmailPasswordUserCreate", // create user with emailPassword
