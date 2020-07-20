@@ -59,7 +59,7 @@ definition.action({
         async (input, output, { email }) =>
             await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
               if(obj && obj.action == 'register' && !obj.used
-                  && obj.email == email) output.put(obj)
+                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
             })
     })`, { email }]))
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
