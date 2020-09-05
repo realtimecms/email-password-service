@@ -194,7 +194,7 @@ definition.action({
       }
     }])
     await service.trigger({
-      type:"OnRegister",
+      type: "OnRegister",
       session: client.sessionId,
       user: user,
       userData
@@ -210,6 +210,12 @@ definition.action({
       type: "OnLogin",
       user: user,
       session: client.sessionId
+    })
+    await service.trigger({
+      type: "OnRegisterComplete",
+      session: client.sessionId,
+      user: user,
+      userData
     })
     return user
   }
