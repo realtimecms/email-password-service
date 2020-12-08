@@ -81,7 +81,14 @@ definition.action({
     const [emailRow, registerKeys] = await Promise.all([emailRowPromise, registerKeysPromise])
     if(registerKeys.length > 0)
       throw "registrationNotConfirmed"
-    if(!emailRow) throw { properties: { email: "notFound" }}
+    if(!emailRow) {
+      const otherUser = await User.indexObjectGet('email', email)
+      if(otherUser) {
+        const googleLogin = otherUser.loginMethods.find(m => m.type == 'google')
+        if(googleLogin) throw { properties: { email: "google" } }
+      }
+      throw { properties: { email: "notFound" }}
+    }
     let userPromise = User.get(emailRow.user)
     let randomKeyPromise = new Promise((resolve, reject) =>
         crypto.randomBytes(16, (err, buf) => {
