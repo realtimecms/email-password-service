@@ -59,7 +59,7 @@ definition.action({
         async (input, output, { email }) =>
             await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
               if(obj && obj.action == 'register' && !obj.used
-                  && obj.email == email) output.put(obj)
+                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
             })
     })`, { email }]))
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
@@ -194,7 +194,7 @@ definition.action({
       }
     }])
     await service.trigger({
-      type:"OnRegister",
+      type: "OnRegister",
       session: client.sessionId,
       user: user,
       userData
@@ -210,6 +210,12 @@ definition.action({
       type: "OnLogin",
       user: user,
       session: client.sessionId
+    })
+    await service.trigger({
+      type: "OnRegisterComplete",
+      session: client.sessionId,
+      user: user,
+      userData
     })
     return user
   }

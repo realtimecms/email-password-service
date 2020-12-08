@@ -121,12 +121,12 @@ definition.action({
   },
   async execute({ key, newPasswordHash }, { service, client}, emit) {
     let emailKey = await EmailKey.get(key)
-    if(!emailKey) throw 'notFound'
-    if(emailKey.action != 'resetPassword') throw 'notFound'
+    if(!emailKey) throw 'keyNotFound'
+    if(emailKey.action != 'resetPassword') throw 'keyTypeMismatch'
     if(emailKey.used) throw new Error('used')
     if(emailKey.expire < Date.now()) throw 'expired'
     let emailRow = await EmailPassword.get(emailKey.email)
-    if(!emailRow) throw 'notFound'
+    if(!emailRow) throw 'emailNotFound'
     service.trigger({
       type: "OnPasswordChange",
       user: emailRow.user,
