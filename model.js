@@ -25,6 +25,11 @@ const EmailPassword = definition.model({
       type: User
     }
   },
+  indexes: {
+    byUser: {
+      property: "user"
+    }
+  },
   crud: {
     options: {
       access: (params, {client, service, visibilityTest}) => {

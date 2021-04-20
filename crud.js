@@ -155,12 +155,19 @@ definition.event({
     }
   },
   async execute({ user }, { service }) {
-    await app.dao.request(['database', 'query', app.databaseName, `(${
-      async (input, output, { user }) =>
-        await input.table("emailPassword_EmailPassword").onChange((obj, oldObj) => {
-          if(obj && obj.user == user) output.table("emailPassword_EmailPassword").delete(obj.id)
-        })
-    })`, { user }])
+    await app.dao.request(['database', 'query'], app.databaseName, `(${
+        async (input, output, { table, index, user }) => {
+          const prefix = `"${user}"_`
+          await (await input.index(index)).range({
+            gte: prefix,
+            lte: prefix+"\xFF\xFF\xFF\xFF"
+          }).onChange((ind, oldInd) => {
+            if(ind && ind.to) {
+              output.table(table).delete(ind.to)
+            }
+          })
+        }
+    })`, { table: EmailPassword.tableName, index: EmailPassword.tableName + '_byUser', user })
   }
 })
 
