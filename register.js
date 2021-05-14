@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 const ReactiveDao = require("@live-change/dao")
 
-const app = require('./app.js')
+const app = require("@live-change/framework").app()
 const definition = require("./definition.js")
 
 const {User, EmailPassword, EmailKey} = require("./model.js")

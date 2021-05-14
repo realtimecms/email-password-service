@@ -1,4 +1,4 @@
-const app = require('./app.js')
+const app = require("@live-change/framework").app()
 const definition = require("./definition.js")
 
 const { User, EmailPassword } = require("./model.js")
