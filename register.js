@@ -251,7 +251,7 @@ definition.view({
       keyObservable.unobserve(observer)
       oldDispose.call(outObservable)
     }
-    outObservable.respwan = () => {
+    outObservable.respawn = () => {
       keyObservable.observe(observer)
       oldRespawn.call(outObservable)
     }
