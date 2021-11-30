@@ -13,16 +13,6 @@ const userDataDefinition = userData
 require('../../i18n/ejs-require.js')
 const i18n = require('../../i18n')
 
-definition.event({
-  name: "keyGenerated",
-  async execute(data) {
-    EmailKey.create({
-      ...data,
-      id: data.key
-    })
-  }
-})
-
 let propertiesWithoutEmail = {}
 for(let propName in userData.field.properties) {
   if(propName == 'email') continue;
@@ -94,13 +84,6 @@ definition.action({
   }
 })
 
-definition.event({
-  name: "keyProlonged",
-  async execute({ key, expire }) {
-    EmailKey.update(key, { expire })
-  }
-})
-
 definition.action({
   name: "resendRegisterKey",
   properties: {
@@ -126,13 +109,6 @@ definition.action({
       type:"sendEmail",
       email: i18nLang.emailPassword.registerEmail({ key: registerKey.key, email, userData: registerKey.userData})
     })
-  }
-})
-
-definition.event({
-  name: "keyUsed",
-  async execute({ key }) {
-    EmailKey.update(key, { used: true })
   }
 })
 
@@ -221,41 +197,4 @@ definition.action({
   }
 })
 
-definition.view({
-  name: "emailKey",
-  properties: {
-    key: {
-      type: EmailKey,
-      idOnly: true
-    }
-  },
-  returns: {
-    type: EmailKey
-  },
-  rawRead: true,
-  async get({ key }, { service }) {
-    const obj = await service.dao.get(['database', 'tableObject', service.databaseName, 'emailPassword_EmailKey', key])
-    return obj && { ...obj, passwordHash: undefined }
-  },
-  observable({ key }, { service }) {
-    const keyObservable = service.dao.observable(
-        ['database', 'tableObject', service.databaseName, 'emailPassword_EmailKey', key])
-    const outObservable = new ReactiveDao.ObservableValue(keyObservable.value)
-    const observer = (signal, value) => {
-      if(signal != 'set') return outObservable.error("unknownSignal")
-      outObservable.set(value && { ...value, passwordHash: undefined })
-    }
-    const oldDispose = outObservable.dispose
-    const oldRespawn = outObservable.respwan
-    outObservable.dispose = () => {
-      keyObservable.unobserve(observer)
-      oldDispose.call(outObservable)
-    }
-    outObservable.respawn = () => {
-      keyObservable.observe(observer)
-      oldRespawn.call(outObservable)
-    }
-    keyObservable.observe(observer)
-    return outObservable
-  }
-})
+

@@ -7,6 +7,7 @@ const autoSecurityProcessor = require('../security-service/autoSecurity.js')
 require("./crud.js")
 
 require("./register.js")
+require("./connect.js")
 require("./login.js")
 
 require("./emailChange.js")
