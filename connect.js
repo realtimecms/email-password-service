@@ -72,13 +72,12 @@ definition.action({
 definition.action({
   name: "finishConnect",
   properties: {
-    key: { type: String },
-    newPasswordHash: EmailPassword.properties.passwordHash
+    key: { type: String }
   },
-  async execute({ key, newPasswordHash }, { service, client}, emit) {
+  async execute({ key }, { service, client}, emit) {
     const emailKey = await EmailKey.get(key)
     if(!emailKey) throw 'keyNotFound'
-    if(emailKey.action != 'resetPassword') throw 'keyTypeMismatch'
+    if(emailKey.action != 'connect') throw 'keyTypeMismatch'
     if(emailKey.used) throw new Error('used')
     if(emailKey.expire < Date.now()) throw 'expired'
     const emailRow = await EmailPassword.get(emailKey.email)
