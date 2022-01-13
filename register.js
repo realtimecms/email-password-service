@@ -95,13 +95,19 @@ definition.action({
     lang: { type: String, validation: ['nonEmpty'] }
   },
   async execute({email, lang}, {service}, emit) {
-    const registerKey = await (service.dao.get(['database', 'query', service.databaseName, `(${
-        async (input, output, { email }) =>
-            await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
-              if(obj && obj.action == 'register' && !obj.used
-                  && obj.email == email) output.put(obj)
-            })
-    })`, { email }]).then(v => v && v[0]))
+    const emailHash = crypto.createHash('sha1').update(email).digest('hex')
+    const registerKeys = await (service.dao.get(['database', 'query', service.databaseName, `(${
+      async (input, output, { emailHash }) => {
+        const index = await input.index("emailPassword_EmailKey_byEmailHashAction")
+        const prefix = `${emailHash}:register_`
+        await index.range({ gt: prefix, lt: prefix+'\xFF' }).onChange((obj, oldObj) => {
+          if(obj) output.debug("OBJ", obj, 'E', obj.expire, ">", Date.now(), '=>', obj.expire > Date.now())
+          if(obj && obj.expire > Date.now()) output.put(obj)
+        })
+      }
+    })`, { emailHash }]))
+    if(registerKeys.length == 0) throw 'notFound'
+    const registerKey = await EmailKey.get(registerKeys[0].to)
     if(!registerKey) throw 'notFound'
     emit("emailPassword", [{
       type: 'keyProlonged',
