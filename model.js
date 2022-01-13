@@ -47,6 +47,24 @@ const EmailKey = definition.model({
     used: { type: Boolean, defaultValue: false },
     email: { type: String },
     expire: { type: Number }
+  },
+  indexes: {
+    byEmailHashAction: {
+      property: ["email", "action"],
+      function: async function(input, output) {
+        function mapper(obj) {
+          output.debug("OBJ?", obj)
+          return obj && obj.email && {
+            id: `${sha1(obj.email)}:${obj.action}_${obj.id}`,
+            to: obj.id,
+            expire: obj.expire
+          }
+        }
+        await input.table('emailPassword_EmailKey').onChange(
+          (obj, oldObj) => output.change(mapper(obj), mapper(oldObj))
+        )
+      }
+    }
   }
 })
 

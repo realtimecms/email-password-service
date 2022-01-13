@@ -4,7 +4,7 @@ const ReactiveDao = require("@live-change/dao")
 const app = require("@live-change/framework").app()
 const definition = require("./definition.js")
 
-const {User, EmailPassword, EmailKey} = require("./model.js")
+const { User, EmailPassword, EmailKey } = require("./model.js")
 
 const passwordHash = require('../config/passwordHash.js')
 const userData = require('../config/userData.js')(definition)
@@ -45,13 +45,17 @@ definition.action({
   },
   async execute({ email, passwordHash, userData, lang }, {service, client}, emit) {
     let emailPasswordPromise = EmailPassword.get(email)
+    const emailHash = crypto.createHash('sha1').update(email).digest('hex')
     const registerKeysPromise = (service.dao.get(['database', 'query', service.databaseName, `(${
-        async (input, output, { email }) =>
-            await input.table("emailPassword_EmailKey").onChange((obj, oldObj) => {
-              if(obj && obj.action == 'register' && !obj.used
-                  && obj.email == email && obj.expire > Date.now()) output.put(obj)
-            })
-    })`, { email }]))
+      async (input, output, { emailHash }) => {
+        const index = await input.index("emailPassword_EmailKey_byEmailHashAction")
+        const prefix = `${emailHash}:register_`
+        await index.range({ gt: prefix, lt: prefix+'\xFF' }).onChange((obj, oldObj) => {
+          if(obj) output.debug("OBJ", obj, 'E', obj.expire, ">", Date.now(), '=>', obj.expire > Date.now())
+          if(obj && obj.expire > Date.now()) output.put(obj)
+        })
+      }
+    })`, { emailHash }]))
     let randomKeyPromise = new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
       if(err) reject(err)
       resolve(buf.toString('hex')
