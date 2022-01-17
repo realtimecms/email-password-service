@@ -101,6 +101,14 @@ definition.action({
         id: email,
         email
       }
+    }, {
+      type: "UserUpdated",
+      user: user,
+      data: {
+        userData: {
+          email
+        }
+      }
     }])
     if(client && client.sessionId) {
       emit("session", [{
